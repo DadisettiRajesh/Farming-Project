@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AgriFolio — Farming Roles & Equipment</title>
+  <meta name="description" content="A clean, professional UI showcasing farming roles and equipment. Built with semantic HTML, modern CSS, and vanilla JS." />
+  <link rel="preconnect" href="https://images.unsplash.com" crossorigin>
+  <style>
+    :root{
+      --bg: #0b1116;
+      --panel: #0f1720;
+      --text: #e6f0f8;
+      --muted: #a8b3bf;
+      --brand: #8bcd50; /* fresh green */
+      --card: #111a23;
+      --stroke: #1b2834;
+      --radius-xl: 20px;
+      --radius-2xl: 28px;
+      --shadow-sm: 0 3px 10px rgba(0,0,0,.25);
+      --shadow-md: 0 10px 30px rgba(0,0,0,.35);
+      --shadow-glow: 0 0 0 1px rgba(139,205,80,.25), 0 10px 30px rgba(139,205,80,.18);
+      --transition: 180ms ease;
+    }
+
+    /* Light theme */
+    .light{
+      --bg: #f7fafc;
+      --panel: #ffffff;
+      --text: #0f1720;
+      --muted: #4b5563;
+      --brand: #3b8c2a;
+      --card: #ffffff;
+      --stroke: #e6edf3;
+      --shadow-sm: 0 3px 10px rgba(0,0,0,.06);
+      --shadow-md: 0 20px 40px rgba(2,6,23,.08);
+      --shadow-glow: 0 0 0 1px rgba(59,140,42,.18), 0 18px 40px rgba(59,140,42,.15);
+    }
+
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji", "Segoe UI Emoji";
+      background: radial-gradient(1200px 600px at 10% -10%, rgba(139,205,80,.08), transparent 50%), var(--bg);
+      color:var(--text);
+      line-height:1.6;
+      letter-spacing:.2px;
+    }
+
+    a{color:inherit}
+
+    /* Top bar */
+    .nav{
+      position: sticky; top:0; z-index:40;
+      backdrop-filter: blur(10px);
+      background: color-mix(in oklab, var(--bg) 80%, transparent);
+      border-bottom:1px solid var(--stroke);
+    }
+    .nav-inner{
+      max-width:1200px; margin:0 auto; padding:12px 16px; display:flex; gap:12px; align-items:center; justify-content:space-between;
+    }
+    .brand{ display:flex; align-items:center; gap:10px; text-decoration:none }
+    .brand-logo{
+      width:38px; height:38px; border-radius:12px; display:grid; place-items:center;
+      background: conic-gradient(from 120deg,#7bc244,#a1db64 60%, #67a832);
+      box-shadow: var(--shadow-glow);
+      color:#081006; font-weight:800;
+    }
+    .brand-title{ font-weight:800; letter-spacing:.3px }
+
+    .nav-actions{ display:flex; align-items:center; gap:8px }
+    .btn{ border:1px solid var(--stroke); background:var(--panel); color:var(--text); padding:10px 14px; border-radius:12px; box-shadow:var(--shadow-sm); cursor:pointer; transition: transform var(--transition), box-shadow var(--transition), border var(--transition), background var(--transition); }
+    .btn:hover{ transform: translateY(-1px); box-shadow:var(--shadow-md) }
+    .btn[aria-pressed="true"]{ border-color: color-mix(in oklab, var(--brand) 70%, transparent); box-shadow: var(--shadow-glow) }
+
+    .searchbar{ position:relative; flex:1; max-width:580px }
+    .searchbar input{
+      width:100%; padding:12px 40px; border-radius:14px; border:1px solid var(--stroke); background:var(--panel); color:var(--text); outline:none; box-shadow:var(--shadow-sm);
+    }
+    .search-icon{ position:absolute; left:12px; top:50%; transform:translateY(-50%); opacity:.6 }
+
+    /* Hero */
+    .hero{ max-width:1200px; margin:26px auto 0; padding:18px 16px 10px }
+    .hero-panel{
+      background:linear-gradient(180deg, color-mix(in oklab,var(--panel) 88%, transparent) 0%, var(--panel) 60%),
+        url('https://images.unsplash.com/photo-1500937386664-56b86b6d82a1?q=80&w=1600&auto=format&fit=crop');
+      background-size:cover; background-position:center;
+      border-radius:var(--radius-2xl);
+      border:1px solid var(--stroke);
+      box-shadow: var(--shadow-md);
+      position:relative; overflow:hidden;
+      min-height:220px;
+    }
+    .hero-content{ position:relative; padding:28px; max-width:720px }
+    .chip{ display:inline-flex; gap:6px; align-items:center; padding:6px 10px; border-radius:999px; border:1px solid var(--stroke); background: color-mix(in oklab, var(--panel) 90%, transparent); box-shadow:var(--shadow-sm); font-size:.9rem }
+    .hero h1{ margin:10px 0 8px; font-size:clamp(1.6rem, 3.6vw, 2.4rem); line-height:1.2 }
+    .hero p{ margin:0; color:var(--muted) }
+
+    /* Controls */
+    .controls{ max-width:1200px; margin:18px auto; padding:0 16px; display:flex; flex-wrap:wrap; gap:10px; align-items:center; justify-content:space-between }
+    .filters{ display:flex; gap:10px; flex-wrap:wrap }
+    .filter{ padding:8px 12px; border-radius:999px; border:1px solid var(--stroke); background:var(--card); cursor:pointer; }
+    .filter.active{ outline:2px solid color-mix(in oklab, var(--brand) 70%, transparent); box-shadow: var(--shadow-glow) }
+    .count{ color:var(--muted); font-size:.95rem }
+
+    /* Grid */
+    .grid{ max-width:1200px; margin:8px auto 60px; padding:0 16px; display:grid; grid-template-columns: repeat(12, 1fr); gap:16px }
+    .card{
+      grid-column: span 12; 
+      background:var(--card); border:1px solid var(--stroke); border-radius:var(--radius-xl); overflow:hidden; box-shadow:var(--shadow-sm); transition: transform var(--transition), box-shadow var(--transition), border var(--transition);
+    }
+    @media(min-width:640px){ .card{ grid-column: span 6 } }
+    @media(min-width:980px){ .card{ grid-column: span 4 } }
+
+    .card-media{ position:relative; aspect-ratio: 16/10; overflow:hidden }
+    .card-media img{ width:100%; height:100%; object-fit:cover; display:block; transition: transform 400ms ease }
+    .card:hover .card-media img{ transform: scale(1.05) }
+
+    .badge{ position:absolute; bottom:12px; left:12px; background: color-mix(in oklab, var(--panel) 86%, transparent); border:1px solid var(--stroke); padding:6px 10px; border-radius:999px; font-size:.85rem; box-shadow:var(--shadow-sm) }
+
+    .card-body{ padding:14px 14px 16px; display:flex; flex-direction:column; gap:8px }
+    .title{ font-weight:700; font-size:1.05rem }
+    .meta{ display:flex; flex-wrap:wrap; gap:6px }
+    .tag{ font-size:.8rem; padding:4px 8px; border-radius:999px; border:1px solid var(--stroke); color:var(--muted) }
+    .desc{ color:var(--muted); font-size:.95rem }
+
+    .card-actions{ display:flex; gap:8px; margin-top:8px }
+    .btn-ghost{ background:transparent; border:1px dashed var(--stroke) }
+    .btn-primary{ border:1px solid color-mix(in oklab, var(--brand) 55%, transparent); background:linear-gradient(180deg, color-mix(in oklab, var(--brand) 12%, var(--panel)) 0%, var(--panel) 70%); box-shadow:var(--shadow-glow) }
+
+    /* Modal */
+    dialog{ border:none; border-radius:18px; padding:0; background:var(--panel); color:var(--text); box-shadow:var(--shadow-md); width:min(880px, 92vw) }
+    .modal-header{ display:flex; justify-content:space-between; align-items:center; padding:12px 14px; border-bottom:1px solid var(--stroke) }
+    .modal-body{ padding:14px }
+
+    /* Footer */
+    footer{ border-top:1px solid var(--stroke); background: color-mix(in oklab, var(--panel) 85%, transparent); }
+    .footer-inner{ max-width:1200px; margin:0 auto; padding:18px 16px; display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between; color:var(--muted) }
+
+    /* Utility */
+    .sr-only{ position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0 }
+    .hidden{ display:none !important }
+  </style>
+</head>
+<body>
+  <nav class="nav" role="navigation" aria-label="Top">
+    <div class="nav-inner">
+      <a class="brand" href="#" aria-label="AgriFolio home">
+        <div class="brand-logo" aria-hidden="true">AF</div>
+        <div>
+          <div class="brand-title">AgriFolio</div>
+          <small style="color:var(--muted)">Farming roles & equipment</small>
+        </div>
+      </a>
+
+      <div class="searchbar" role="search">
+        <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.3-4.3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.6"/></svg>
+        <input id="search" type="search" placeholder="Search roles, equipment, tags... (e.g. irrigation)" aria-label="Search" />
+      </div>
+
+      <div class="nav-actions">
+        <button id="themeToggle" class="btn" aria-pressed="false" aria-label="Toggle theme">Toggle Theme</button>
+        <button id="favoritesBtn" class="btn" aria-label="Open favorites">Favorites (<span id="favCount">0</span>)</button>
+      </div>
+    </div>
+  </nav>
+
+  <header class="hero">
+    <div class="hero-panel hero">
+      <div class="hero-content">
+        <span class="chip" aria-label="site badge">🌾 Sustainable • Modern • Productive</span>
+        <h1>Discover key <em>farming roles</em> and essential <em>equipment</em></h1>
+        <p>Filter, search and learn. Clean UI, responsive grid, keyboard accessible, and zero dependencies.</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="controls" aria-label="Filters and sorting">
+    <div class="filters" role="tablist" aria-label="Category filters">
+      <button class="filter active" data-filter="all" role="tab" aria-selected="true">All</button>
+      <button class="filter" data-filter="role" role="tab">Roles</button>
+      <button class="filter" data-filter="equipment" role="tab">Equipment</button>
+      <button class="filter" data-filter="irrigation" role="tab">Irrigation</button>
+      <button class="filter" data-filter="soil" role="tab">Soil</button>
+      <button class="filter" data-filter="harvest" role="tab">Harvest</button>
+      <button class="filter" data-filter="mechanic" role="tab">Mechanic</button>
+    </div>
+    <div class="count" aria-live="polite"><span id="visibleCount">0</span> items shown</div>
+  </section>
+
+  <main class="grid" id="grid" aria-label="Cards grid"></main>
+
+  <dialog id="modal" aria-label="Details">
+    <div class="modal-header">
+      <strong id="modalTitle">Item</strong>
+      <button id="modalClose" class="btn" aria-label="Close">Close</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </dialog>
+
+  <footer>
+    <div class="footer-inner">
+      <small>© <span id="year"></span> AgriFolio. Built with HTML • CSS • JavaScript.</small>
+      <small>Tip: Use <kbd>/</kbd> to focus search • <kbd>Esc</kbd> to clear.</small>
+    </div>
+  </footer>
+
+  <script>
+    // --- Data --------------------------------------------------------------
+    const ITEMS = [
+      // Roles
+      {
+        id: 'role-farmer', type: 'role', badge: 'Role',
+        title: 'Crop Farmer',
+        image: 'https://images.unsplash.com/photo-1519681393784-d120267933ba?q=80&w=1600&auto=format&fit=crop',
+        tags: ['soil', 'planting', 'harvest'],
+        description: 'Plans crop cycles, prepares fields, manages planting, irrigation and harvesting while monitoring weather and pests.'
+      },
+      {
+        id: 'role-agronomist', type: 'role', badge: 'Role',
+        title: 'Agronomist',
+        image: 'https://images.unsplash.com/photo-1560493676-04071c5f467b?q=80&w=1600&auto=format&fit=crop',
+        tags: ['soil', 'analytics', 'yield'],
+        description: 'Advises on soil health, nutrients and seed selection; analyzes yield data to optimize productivity.'
+      },
+      {
+        id: 'role-irrigation', type: 'role', badge: 'Role',
+        title: 'Irrigation Specialist',
+        image: 'https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?q=80&w=1600&auto=format&fit=crop',
+        tags: ['irrigation', 'water', 'drip'],
+        description: 'Designs, installs and maintains drip/sprinkler systems; ensures efficient water use and coverage.'
+      },
+      {
+        id: 'role-operator', type: 'role', badge: 'Role',
+        title: 'Tractor Operator',
+        image: 'https://images.unsplash.com/photo-1541336032412-2048a678540d?q=80&w=1600&auto=format&fit=crop',
+        tags: ['mechanic', 'tractor', 'safety'],
+        description: 'Operates tractors and implements for ploughing, planting, spraying and hauling with safety protocols.'
+      },
+      {
+        id: 'role-supply', type: 'role', badge: 'Role',
+        title: 'Supply Chain Coordinator',
+        image: 'https://images.unsplash.com/photo-1597926574771-aff2ef37f292?q=80&w=1600&auto=format&fit=crop',
+        tags: ['logistics', 'harvest'],
+        description: 'Coordinates storage, transport and sales; tracks quality and compliance from field to market.'
+      },
+
+      // Equipment
+      {
+        id: 'eq-tractor', type: 'equipment', badge: 'Equipment',
+        title: 'Utility Tractor',
+        image: 'https://images.unsplash.com/photo-1504274066651-8d31a536b11a?q=80&w=1600&auto=format&fit=crop',
+        tags: ['tractor', 'mechanic', 'tillage'],
+        description: 'Power unit for ploughing, seeding, spraying and hauling; supports multiple implements via PTO.'
+      },
+      {
+        id: 'eq-combine', type: 'equipment', badge: 'Equipment',
+        title: 'Combine Harvester',
+        image: 'https://images.unsplash.com/photo-1533206545718-581cbd52a045?q=80&w=1600&auto=format&fit=crop',
+        tags: ['harvest', 'grain'],
+        description: 'Cuts, threshes and cleans grain in a single pass; reduces harvest time and losses.'
+      },
+      {
+        id: 'eq-plough', type: 'equipment', badge: 'Equipment',
+        title: 'Mouldboard Plough',
+        image: 'https://images.unsplash.com/photo-1602088292659-8b9a59c4b797?q=80&w=1600&auto=format&fit=crop',
+        tags: ['soil', 'tillage'],
+        description: 'Turns and aerates soil, buries residue and weeds, preparing a clean seedbed.'
+      },
+      {
+        id: 'eq-sprayer', type: 'equipment', badge: 'Equipment',
+        title: 'Boom Sprayer',
+        image: 'https://images.unsplash.com/photo-1590402494587-54c69fc7736a?q=80&w=1600&auto=format&fit=crop',
+        tags: ['irrigation', 'spray', 'pest'],
+        description: 'Applies fertilizers and crop-protection products uniformly; nozzle selection controls droplet size.'
+      },
+      {
+        id: 'eq-drip', type: 'equipment', badge: 'Equipment',
+        title: 'Drip Irrigation Kit',
+        image: 'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?q=80&w=1600&auto=format&fit=crop',
+        tags: ['irrigation', 'water', 'drip'],
+        description: 'Delivers water directly to roots with minimal evaporation; ideal for orchards and vegetables.'
+      },
+      {
+        id: 'eq-seeder', type: 'equipment', badge: 'Equipment',
+        title: 'Seed Drill',
+        image: 'https://images.unsplash.com/photo-1583417319070-4a69db38a482?q=80&w=1600&auto=format&fit=crop',
+        tags: ['planting', 'row'],
+        description: 'Places seeds at consistent depth and spacing, improving germination and yield uniformity.'
+      }
+    ];
+
+    // --- Render ------------------------------------------------------------
+    const grid = document.getElementById('grid');
+    const visibleCount = document.getElementById('visibleCount');
+
+    function cardTemplate(item){
+      const tags = item.tags.map(t=>`<span class="tag">${t}</span>`).join('');
+      return `
+        <article class="card" data-type="${item.type}" data-tags="${item.tags.join(',')}">
+          <div class="card-media">
+            <img loading="lazy" src="${item.image}" alt="${item.title}"/>
+            <span class="badge">${item.badge}</span>
+          </div>
+          <div class="card-body">
+            <div class="title">${item.title}</div>
+            <p class="desc">${item.description}</p>
+            <div class="meta">${tags}</div>
+            <div class="card-actions">
+              <button class="btn btn-primary" data-open="${item.id}">Details</button>
+              <button class="btn btn-ghost" data-fav="${item.id}">★ Save</button>
+            </div>
+          </div>
+        </article>`;
+    }
+
+    function render(items){
+      grid.innerHTML = items.map(cardTemplate).join('');
+      visibleCount.textContent = items.length;
+    }
+
+    render(ITEMS);
+
+    // --- Filters & Search --------------------------------------------------
+    const filters = document.querySelectorAll('.filter');
+    const searchInput = document.getElementById('search');
+
+    let activeFilter = 'all';
+
+    function applyFilters(){
+      const q = searchInput.value.trim().toLowerCase();
+      const out = ITEMS.filter(it=>{
+        const matchesFilter = activeFilter === 'all' || it.type === activeFilter || it.tags.includes(activeFilter);
+        const inText = `${it.title} ${it.description} ${it.tags.join(' ')}`.toLowerCase().includes(q);
+        return matchesFilter && inText;
+      });
+      render(out);
+    }
+
+    filters.forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        filters.forEach(b=>b.classList.remove('active'));
+        btn.classList.add('active');
+        activeFilter = btn.dataset.filter;
+        applyFilters();
+      })
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+
+    // Keyboard shortcuts
+    window.addEventListener('keydown', (e)=>{
+      if(e.key === '/' && document.activeElement !== searchInput){ e.preventDefault(); searchInput.focus(); }
+      if(e.key === 'Escape'){ searchInput.value=''; applyFilters(); }
+    });
+
+    // --- Modal & Favorites -------------------------------------------------
+    const modal = document.getElementById('modal');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const modalClose = document.getElementById('modalClose');
+
+    function openModal(item){
+      modalTitle.textContent = item.title;
+      modalBody.innerHTML = `
+        <img src="${item.image}" alt="${item.title}" style="width:100%; height:auto; border-radius:14px; border:1px solid var(--stroke);" />
+        <p style="margin-top:10px">${item.description}</p>
+        <p class="meta">${item.tags.map(t=>`<span class='tag'>${t}</span>`).join('')}</p>
+      `;
+      modal.showModal();
+    }
+
+    modalClose.addEventListener('click', ()=> modal.close());
+    modal.addEventListener('click', (event)=>{ // click outside to close
+      const rect = modal.getBoundingClientRect();
+      if(event.clientY < rect.top || event.clientY > rect.bottom || event.clientX < rect.left || event.clientX > rect.right){
+        modal.close();
+      }
+    });
+
+    grid.addEventListener('click', (e)=>{
+      const openBtn = e.target.closest('[data-open]');
+      const favBtn = e.target.closest('[data-fav]');
+      if(openBtn){
+        const item = ITEMS.find(x=>x.id === openBtn.dataset.open);
+        if(item) openModal(item);
+      }
+      if(favBtn){
+        toggleFavorite(favBtn.dataset.fav);
+      }
+    });
+
+    // Favorites with localStorage
+    const FAV_KEY = 'agrifolio:favorites';
+    const favCount = document.getElementById('favCount');
+    const favoritesBtn = document.getElementById('favoritesBtn');
+
+    function getFavs(){
+      try{ return JSON.parse(localStorage.getItem(FAV_KEY) || '[]'); }catch{ return [] }
+    }
+    function setFavs(list){ localStorage.setItem(FAV_KEY, JSON.stringify(list)); favCount.textContent = list.length }
+    function toggleFavorite(id){
+      const list = getFavs();
+      const idx = list.indexOf(id);
+      if(idx>-1) list.splice(idx,1); else list.push(id);
+      setFavs(list);
+    }
+
+    // Initialize favorites count
+    setFavs(getFavs());
+
+    favoritesBtn.addEventListener('click', ()=>{
+      const favs = getFavs();
+      const favItems = ITEMS.filter(x=>favs.includes(x.id));
+      if(favItems.length){
+        modalTitle.textContent = 'Saved Items';
+        modalBody.innerHTML = favItems.map(x=>`<div style="display:flex; gap:12px; align-items:center; margin:10px 0">
+            <img src='${x.image}' alt='' width='88' height='66' style='object-fit:cover; border-radius:10px; border:1px solid var(--stroke);' />
+            <div>
+              <div style='font-weight:700'>${x.title}</div>
+              <div class='meta'>${x.tags.map(t=>`<span class="tag">${t}</span>`).join('')}</div>
+            </div>
+          </div>`).join('');
+      }else{
+        modalTitle.textContent = 'No favorites yet';
+        modalBody.textContent = 'Click ★ Save on any card to add it here.';
+      }
+      modal.showModal();
+    });
+
+    // --- Theme -------------------------------------------------------------
+    const themeToggle = document.getElementById('themeToggle');
+    const THEME_KEY = 'agrifolio:theme';
+    function setTheme(t){ document.documentElement.classList.toggle('light', t==='light'); localStorage.setItem(THEME_KEY,t); themeToggle.setAttribute('aria-pressed', String(t!=='light')) }
+    (function initTheme(){
+      const saved = localStorage.getItem(THEME_KEY);
+      const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+      setTheme(saved ?? (prefersLight ? 'light':'dark'));
+    })();
+    themeToggle.addEventListener('click', ()=>{
+      const isLight = document.documentElement.classList.contains('light');
+      setTheme(isLight ? 'dark' : 'light');
+    });
+
+    // Footer year
+    document.getElementById('year').textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
+
